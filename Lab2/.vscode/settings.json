@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.cu": "c",
+        "*.c0": "c",
+        "complex": "cpp"
+    }
+}
