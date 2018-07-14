@@ -24,8 +24,8 @@ int main (int argc, char** argv) {
         }
     }
     cvShowImage("show", img);
-    cvWaitKey(0);
-
+    //cvWaitKey(0);
+    
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -34,14 +34,18 @@ int main (int argc, char** argv) {
         //start timer
         gettimeofday(&t1, NULL);
         //receive
-        for(rankCount = 0; rankCount < size - 1; rankCount++) {
-            MPI_Recv(tempData, img->height * img->width, MPI_CHAR, MPI_ANY_SOURCE, receiveTag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            for(i = img->height * receiveTag ? 1 : (img->height * receiveTag) / (size - 1); i < (img->height * (receiveTag + 1)) / (size - 1); i++) {
-                for(j = 1; j < img->width; j++) {    
-                    destData[i * img->width + j] = tempData[i * img->width + j];
-                }    
+        rankCount = 0;
+        while(1) {
+            MPI_Recv(tempData, img->height * img->width, MPI_CHAR, MPI_ANY_SOURCE   , receiveTag, MPI_COMM_WORLD,);
+            if(receiveTag  >= 0 && receiveTag <= 8) {
+                for(i = img->height * receiveTag ? 1 : (img->height * receiveTag) / (size - 1); i < (img->height * (receiveTag + 1)) / (size - 1); i++) {
+                    for(j = 1; j < img->width; j++) {    
+                        destData[i * img->width + j] = tempData[i * img->width + j];
+                    }    
+                }
+                rankCount++;
             }
-
+            if(rankCount == size - 1) break;
         }
     }
     else { //process different part of the picture by rank
@@ -73,5 +77,6 @@ int main (int argc, char** argv) {
         cvWaitKey(0);
         cvReleaseImage(&img);
         cvDestroyAllWindows();
+    }    
 }
 
